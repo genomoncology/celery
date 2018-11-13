@@ -4,6 +4,7 @@ from __future__ import absolute_import, unicode_literals
 
 from functools import partial
 from ssl import CERT_NONE, CERT_OPTIONAL, CERT_REQUIRED
+import threading
 
 from kombu.utils.functional import retry_over_time
 from kombu.utils.objects import cached_property
@@ -76,7 +77,7 @@ logger = get_logger(__name__)
 
 
 class ResultConsumer(BaseResultConsumer):
-    _pubsub = None
+    _thread = threading.local()
 
     def __init__(self, *args, **kwargs):
         super(ResultConsumer, self).__init__(*args, **kwargs)
@@ -86,7 +87,8 @@ class ResultConsumer(BaseResultConsumer):
 
     def on_after_fork(self):
         try:
-            self.backend.client.connection_pool.reset()
+            if getattr(self._thread, "client", None) is not None:
+                self._thread.client.connection_pool.reset()
             if self._pubsub is not None:
                 self._pubsub.close()
         except KeyError as e:
@@ -102,9 +104,12 @@ class ResultConsumer(BaseResultConsumer):
         self._maybe_cancel_ready_task(meta)
 
     def start(self, initial_task_id, **kwargs):
-        self._pubsub = self.backend.client.pubsub(
-            ignore_subscribe_messages=True,
-        )
+        if self._pubsub is None:
+            self._thread.client = self.backend.create_client()
+            self._thread.pubsub = self._thread.client.pubsub(
+                ignore_subscribe_messages=True
+            )
+
         self._consume_from(initial_task_id)
 
     def on_wait_for_pending(self, result, **kwargs):
@@ -138,6 +143,9 @@ class ResultConsumer(BaseResultConsumer):
             self.subscribed_to.discard(key)
             self._pubsub.unsubscribe(key)
 
+    @property
+    def _pubsub(self):
+        return getattr(self._thread, "_pubsub", None)
 
 class RedisBackend(BaseKeyValueStoreBackend, AsyncBackendMixin):
     """Redis task result store."""
@@ -406,6 +414,9 @@ class RedisBackend(BaseKeyValueStoreBackend, AsyncBackendMixin):
 
     @cached_property
     def client(self):
+        return self.create_client()
+
+    def create_client(self):
         return self._create_client(**self.connparams)
 
     def __reduce__(self, args=(), kwargs={}):
