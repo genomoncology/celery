@@ -104,6 +104,9 @@ class ResultConsumer(BaseResultConsumer):
         self._maybe_cancel_ready_task(meta)
 
     def start(self, initial_task_id, **kwargs):
+        self._pubsub = self.backend.client.pubsub(
+            ignore_subscribe_messages=True,
+        )
         if self._pubsub is None:
             self._thread.client = self.backend.create_client()
             self._thread.pubsub = self._thread.client.pubsub(
