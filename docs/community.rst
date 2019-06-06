@@ -21,14 +21,14 @@ Resources
 Who's using Celery
 ------------------
 
-https://github.com/celery/celery/wiki#companieswebsites-using-celery
+https://wiki.github.com/celery/celery/using
 
 .. _res-wiki:
 
 Wiki
 ----
 
-https://github.com/celery/celery/wiki
+https://wiki.github.com/celery/celery/
 
 .. _res-stackoverflow:
 

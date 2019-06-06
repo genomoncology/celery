@@ -223,11 +223,6 @@ class TimeoutError(TaskError):
 class MaxRetriesExceededError(TaskError):
     """The tasks max restart limit has been exceeded."""
 
-    def __init__(self, *args, **kwargs):
-        self.task_args = kwargs.pop("task_args", [])
-        self.task_kwargs = kwargs.pop("task_kwargs", dict())
-        super(MaxRetriesExceededError, self).__init__(*args, **kwargs)
-
 
 class TaskRevokedError(TaskError):
     """The task has been revoked, so no result available."""

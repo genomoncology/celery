@@ -99,13 +99,13 @@ class AsyncResult(ResultBase):
         self.id = id
         self.backend = backend or self.app.backend
         self.parent = parent
-        self.on_ready = promise(self._on_fulfilled, weak=True)
+        self.on_ready = promise(self._on_fulfilled)
         self._cache = None
         self._ignored = False
 
     @property
     def ignored(self):
-        """If True, task result retrieval is disabled."""
+        """"If True, task result retrieval is disabled."""
         if hasattr(self, '_ignored'):
             return self._ignored
         return False
@@ -128,10 +128,8 @@ class AsyncResult(ResultBase):
         return (self.id, parent and parent.as_tuple()), None
 
     def forget(self):
-        """Forget the result of this task and its parents."""
+        """Forget about (and possibly remove the result of) this task."""
         self._cache = None
-        if self.parent:
-            self.parent.forget()
         self.backend.forget(self.id)
 
     def revoke(self, connection=None, terminate=False, signal=None,
@@ -205,7 +203,7 @@ class AsyncResult(ResultBase):
             assert_will_not_block()
         _on_interval = promise()
         if follow_parents and propagate and self.parent:
-            on_interval = promise(self._maybe_reraise_parent_error, weak=True)
+            on_interval = promise(self._maybe_reraise_parent_error)
             self._maybe_reraise_parent_error()
         if on_interval:
             _on_interval.then(on_interval)
@@ -531,7 +529,7 @@ class ResultSet(ResultBase):
         self.on_ready = promise(args=(self,))
         self._on_full = ready_barrier or barrier(results)
         if self._on_full:
-            self._on_full.then(promise(self._on_ready, weak=True))
+            self._on_full.then(promise(self._on_ready))
 
     def add(self, result):
         """Add :class:`AsyncResult` as a new member of the set.

@@ -70,7 +70,8 @@ class Dumper(object):
         )
         sep = fields and ':' or ''
         self.say('{0} [{1}] {2}{3} {4}'.format(
-            hostname, timestamp, humanize_type(type), sep, fields),)
+            hostname, timestamp, humanize_type(type), sep, fields),
+        )
 
     def format_task_event(self, hostname, timestamp, type, task, event):
         fields = ', '.join(
@@ -78,7 +79,8 @@ class Dumper(object):
         )
         sep = fields and ':' or ''
         self.say('{0} [{1}] {2}{3} {4} {5}'.format(
-            hostname, timestamp, humanize_type(type), sep, task, fields),)
+            hostname, timestamp, humanize_type(type), sep, task, fields),
+        )
 
 
 def evdump(app=None, out=sys.stdout):

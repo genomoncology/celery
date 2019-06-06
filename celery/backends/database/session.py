@@ -47,7 +47,8 @@ class SessionManager(object):
             if short_lived_sessions or dburi not in self._sessions:
                 self._sessions[dburi] = sessionmaker(bind=engine)
             return engine, self._sessions[dburi]
-        return engine, sessionmaker(bind=engine)
+        else:
+            return engine, sessionmaker(bind=engine)
 
     def prepare_models(self, engine):
         if not self.prepared:

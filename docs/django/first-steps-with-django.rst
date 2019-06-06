@@ -92,9 +92,7 @@ The uppercase name-space means that all Celery configuration options
 must be specified in uppercase instead of lowercase, and start with
 ``CELERY_``, so for example the :setting:`task_always_eager` setting
 becomes ``CELERY_TASK_ALWAYS_EAGER``, and the :setting:`broker_url`
-setting becomes ``CELERY_BROKER_URL``. This also applies to the
-workers settings, for instance, the :setting:`worker_concurrency`
-setting becomes ``CELERY_WORKER_CONCURRENCY``.
+setting becomes ``CELERY_BROKER_URL``.
 
 You can pass the settings object directly instead, but using a string
 is better since then the worker doesn't have to serialize the object.
@@ -189,7 +187,7 @@ To use this with your project you need to follow these steps:
 
     .. code-block:: console
 
-        $ python manage.py migrate django_celery_results
+        $ python manage.py migrate celery_results
 
 #. Configure Celery to use the :pypi:`django-celery-results` backend.
 
@@ -204,7 +202,7 @@ To use this with your project you need to follow these steps:
 
     .. code-block:: python
 
-        CELERY_CACHE_BACKEND = 'django-cache'
+        CELERY_RESULT_BACKEND = 'django-cache'
 
 ``django-celery-beat`` - Database-backed Periodic Tasks with Admin interface.
 -----------------------------------------------------------------------------
@@ -230,11 +228,6 @@ use the help command:
 .. code-block:: console
 
     $ celery help
-    
-Known Issues
-============
-CONN_MAX_AGE other than zero is known to cause issues according to `bug #4878 <https://github.com/celery/celery/issues/4878>`_. Until this is fixed, please set CONN_MAX_AGE to zero.
-
 
 Where to go from here
 =====================

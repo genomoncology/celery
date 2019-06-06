@@ -84,8 +84,7 @@ class EventDispatcher(object):
             self.connection = channel.connection.client
         self.enabled = enabled
         conninfo = self.connection or self.app.connection_for_write()
-        self.exchange = get_exchange(conninfo,
-                                     name=self.app.conf.event_exchange)
+        self.exchange = get_exchange(conninfo)
         if conninfo.transport.driver_type in self.DISABLED_TRANSPORTS:
             self.enabled = False
         if self.enabled:

@@ -18,7 +18,6 @@ Andreas
 Andrey
 Andriy
 Aneil
-ArangoDB
 Areski
 Armin
 Artyom
