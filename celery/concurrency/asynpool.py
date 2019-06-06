@@ -176,8 +176,6 @@ def _select(readers=None, writers=None, err=None, timeout=0,
         return poll(readers, writers, err, timeout)
     except (select.error, socket.error) as exc:
         # Workaround for celery/celery#4513
-        # TODO: Remove the fallback to the first arg of the exception
-        # once we drop Python 2.7.
         try:
             _errno = exc.errno
         except AttributeError:
@@ -385,8 +383,7 @@ class AsynPool(_pool.Pool):
         return worker
 
     def __init__(self, processes=None, synack=False,
-                 sched_strategy=None, proc_alive_timeout=None,
-                 *args, **kwargs):
+                 sched_strategy=None, *args, **kwargs):
         self.sched_strategy = SCHED_STRATEGIES.get(sched_strategy,
                                                    sched_strategy)
         processes = self.cpu_count() if processes is None else processes
@@ -405,12 +402,9 @@ class AsynPool(_pool.Pool):
 
         # We keep track of processes that haven't yet
         # sent a WORKER_UP message.  If a process fails to send
-        # this message within _proc_alive_timeout we terminate it
+        # this message within proc_up_timeout we terminate it
         # and hope the next process will recover.
-        self._proc_alive_timeout = (
-            PROC_ALIVE_TIMEOUT if proc_alive_timeout is None
-            else proc_alive_timeout
-        )
+        self._proc_alive_timeout = PROC_ALIVE_TIMEOUT
         self._waiting_to_start = set()
 
         # denormalized set of all inqueues.
@@ -484,16 +478,8 @@ class AsynPool(_pool.Pool):
         [self._track_child_process(w, hub) for w in self._pool]
         # Handle_result_event is called whenever one of the
         # result queues are readable.
-        stale_fds = []
-        for fd in self._fileno_to_outq:
-            try:
-                hub.add_reader(fd, self.handle_result_event, fd)
-            except OSError:
-                logger.info("Encountered OSError while trying "
-                            "to access fd %s ", fd, exc_info=True)
-                stale_fds.append(fd)  # take note of stale fd
-        for fd in stale_fds:  # Remove now defunct file descriptors
-            self._fileno_to_outq.pop(fd, None)
+        [hub.add_reader(fd, self.handle_result_event, fd)
+         for fd in self._fileno_to_outq]
 
         # Timers include calling maintain_pool at a regular interval
         # to be certain processes are restarted.
@@ -1067,7 +1053,7 @@ class AsynPool(_pool.Pool):
         return inq, outq, synq
 
     def on_process_alive(self, pid):
-        """Called when receiving the :const:`WORKER_UP` message.
+        """Called when reciving the :const:`WORKER_UP` message.
 
         Marks the process as ready to receive work.
         """

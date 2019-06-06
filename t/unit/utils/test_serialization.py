@@ -10,11 +10,9 @@ import pytz
 from case import Mock, mock, skip
 from kombu import Queue
 
-from celery.utils.serialization import (STRTOBOOL_DEFAULT_TABLE,
-                                        UnpickleableExceptionWrapper,
+from celery.utils.serialization import (UnpickleableExceptionWrapper,
                                         ensure_serializable,
-                                        get_pickleable_etype, jsonify,
-                                        strtobool)
+                                        get_pickleable_etype, jsonify)
 
 
 class test_AAPickle:
@@ -34,20 +32,17 @@ class test_ensure_serializable:
 
     @skip.unless_python3()
     def test_json_py3(self):
-        expected = (1, "<class 'object'>")
-        actual = ensure_serializable([1, object], encoder=json.dumps)
-        assert expected == actual
+        assert (1, "<class 'object'>") == \
+            ensure_serializable([1, object], encoder=json.dumps)
 
     @skip.if_python3()
     def test_json_py2(self):
-        expected = (1, "<type 'object'>")
-        actual = ensure_serializable([1, object], encoder=json.dumps)
-        assert expected == actual
+        assert (1, "<type 'object'>") == \
+            ensure_serializable([1, object], encoder=json.dumps)
 
     def test_pickle(self):
-        expected = (1, object)
-        actual = ensure_serializable(expected, encoder=pickle.dumps)
-        assert expected == actual
+        assert (1, object) == \
+            ensure_serializable((1, object), encoder=pickle.dumps)
 
 
 class test_UnpickleExceptionWrapper:
@@ -61,6 +56,7 @@ class test_UnpickleExceptionWrapper:
 class test_get_pickleable_etype:
 
     def test_get_pickleable_etype(self):
+
         class Unpickleable(Exception):
             def __reduce__(self):
                 raise ValueError('foo')
@@ -97,30 +93,3 @@ class test_jsonify:
 
         with pytest.raises(ValueError):
             jsonify(obj)
-
-
-class test_strtobool:
-
-    @pytest.mark.parametrize('s,b',
-                             STRTOBOOL_DEFAULT_TABLE.items())
-    def test_default_table(self, s, b):
-        assert strtobool(s) == b
-
-    def test_unknown_value(self):
-        with pytest.raises(TypeError,
-                           # todo replace below when dropping python 2.7
-                           # match="Cannot coerce 'foo' to type bool"):
-                           match=r"Cannot coerce u?'foo' to type bool"):
-            strtobool('foo')
-
-    def test_no_op(self):
-        assert strtobool(1) == 1
-
-    def test_custom_table(self):
-        custom_table = {
-            'foo': True,
-            'bar': False
-        }
-
-        assert strtobool("foo", table=custom_table)
-        assert not strtobool("bar", table=custom_table)
