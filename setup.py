@@ -50,32 +50,38 @@ elif PY33_OR_LESS and not PYPY24_ATLEAST:
 # -*- Extras -*-
 
 EXTENSIONS = {
+    'arangodb',
     'auth',
+    'azureblockblob',
+    'brotli',
     'cassandra',
-    'django',
-    'elasticsearch',
-    'memcache',
-    'pymemcache',
+    'consul',
+    'cosmosdbsql',
     'couchbase',
+    'couchdb',
+    'django',
+    'dynamodb',
+    'elasticsearch',
     'eventlet',
     'gevent',
+    'librabbitmq',
+    'lzma',
+    'memcache',
+    'mongodb',
     'msgpack',
-    'yaml',
+    'pymemcache',
+    'pyro',
     'redis',
-    'sqs',
-    'couchdb',
     'riak',
-    'zookeeper',
+    's3',
+    'slmq',
     'solar',
     'sqlalchemy',
-    'azureblockblob',
-    'librabbitmq',
-    'pyro',
-    'slmq',
+    'sqs',
     'tblib',
-    'consul',
-    'dynamodb',
-    'mongodb',
+    'yaml',
+    'zookeeper',
+    'zstd'
 }
 
 # -*- Classifiers -*-
@@ -89,7 +95,6 @@ classes = """
     Programming Language :: Python :: 2
     Programming Language :: Python :: 2.7
     Programming Language :: Python :: 3
-    Programming Language :: Python :: 3.4
     Programming Language :: Python :: 3.5
     Programming Language :: Python :: 3.6
     Programming Language :: Python :: 3.7
@@ -178,6 +183,7 @@ def extras_require():
 
 # -*- Long Description -*-
 
+
 def long_description():
     try:
         return codecs.open('README.rst', 'r', 'utf-8').read()
@@ -185,6 +191,7 @@ def long_description():
         return 'Long description error: Missing README.rst file'
 
 # -*- Command: setup.py test -*-
+
 
 class pytest(setuptools.command.test.test):
     user_options = [('pytest-args=', 'a', 'Arguments to pass to py.test')]
@@ -198,6 +205,7 @@ class pytest(setuptools.command.test.test):
         sys.exit(_pytest.main(self.pytest_args))
 
 # -*- %%% -*-
+
 
 meta = parse_dist_meta()
 setuptools.setup(
@@ -213,7 +221,7 @@ setuptools.setup(
     license='BSD',
     platforms=['any'],
     install_requires=install_requires(),
-    python_requires=">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*",
+    python_requires=">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*,",
     tests_require=reqs('test.txt'),
     extras_require=extras_require(),
     classifiers=[s.strip() for s in classes.split('\n') if s],
